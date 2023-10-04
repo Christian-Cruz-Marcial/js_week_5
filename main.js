@@ -78,29 +78,41 @@ class Subject {
 	}
 
 	removeObserver(observer) {
-		const index = this.observers.indexOf(observer);
-		if(index > -1) {
-			this.observers.splice(index, 1);
-		}
+		this.observers = this.observers.filter(obs => obs !== observer)
 	}
 
 	notifyObservers(data) {
-		for(let observer of this.observers) {
-			observer.update();
-	}}
+		this.observers.forEach(observer => observer.update(data))	;
+	}
 
 	async fetchAndNotify() {
-		try{const url = 'https://jsonplaceholder.typicode.com/posts?_limit=10';}
-		catch{Observer.update()}
+		const url = 'https://jsonplaceholder.typicode.com/posts?_limit=10';
+		try{
+			const response = await fetch(url);
+			const data = await response.json();
+			thhis.notifyObservers(data);
+		} catch (error){
+			this.notifyObservers('Error: ${error.messafe}');
+		}
 	}
 }
-Subject.fetchAndNotify();
 
 class Observer {
 	update(data) {
-		// TODO: Handle the received data. If it's an error message, log it.
-		// If it's the list of posts, destructure and log the title of the first post.
+		if (typeof data === 'string') {
+			console.log(data);
+		}else {
+			const [{title}] = data;
+			console.log(title);
+		}
 	}
 }
+//initaing subject
+const subject = new subject();
 
-// TODO: Instantiate the Subject, add observers, and call the fetchAndNotify method
+//add observers
+subject.addObserver(new Observer());
+subject.addObserver(new Observer());
+
+//call the fetch&notify 
+subject.fetchAndNotify();
